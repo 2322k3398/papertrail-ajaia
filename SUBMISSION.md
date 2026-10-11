@@ -1,21 +1,35 @@
-# Submission contents
+# Ajaia AI-Native Full Stack Developer Assignment
 
-- `app.py` — Flask backend and routes
-- `templates/` — login, workspace, and document editor views
-- `static/style.css` — responsive interface styles
-- `tests/test_app.py` — automated persistence and sharing tests
-- `requirements.txt` — Python dependencies
-- `README.md` — setup, demo accounts, tests, deployment notes, limitations
-- `ARCHITECTURE.md` — architecture and tradeoffs
-- `AI_WORKFLOW.md` — AI workflow note; personalize to reflect actual work
-- `Procfile`, `runtime.txt`, `render.yaml` — deployment configuration
-- `WALKTHROUGH_URL.txt` — add the final public walkthrough video URL
+## 1. Live Product
+https://papertrail-docs.onrender.com
 
-## Live product
-Not deployed yet. Add the public deployed URL here before submission.
+## 2. Source Code
+GitHub Repository: https://github.com/2322k3398/papertrail-ajaia
 
-## Drive folder
-Add the Google Drive folder link containing the final source and supporting materials before submission.
+## 3. Project Overview
+Papertrail is a lightweight collaborative document editor built with Python Flask, SQLite, HTML, CSS, and JavaScript.
 
-## Demo access
-Choose one of the seeded accounts on the login page. No password is required for this assessment demo.
+## 4. Included Deliverables
+- Source code and application templates
+- README.md — setup and run instructions
+- ARCHITECTURE.md — architecture and engineering tradeoffs
+- AI_WORKFLOW.md — AI usage and verification notes
+- SUBMISSION.md — deliverables and links
+- tests/test_app.py — automated tests
+- WALKTHROUGH_URL.txt — walkthrough video link
+
+## 5. Demo Accounts
+- Vishnu Priya: vishnupriya200636@gmail.com
+- Alex Morgan: alex@example.com
+- Sam Taylor: sam@example.com
+
+Demo accounts do not require passwords. Use the login screen to switch accounts.
+
+## 6. Walkthrough Video
+Pending recording. The public video link will be added to WALKTHROUGH_URL.txt before final submission.
+
+## 7. Known Limitations
+- Demo account selection is not production-grade authentication.
+- Real-time collaboration and version history are not implemented.
+- Imported files are limited to .txt and .md.
+- Render temporary database storage may not survive restarts or redeployments.
