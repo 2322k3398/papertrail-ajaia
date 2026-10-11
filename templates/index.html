@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Your workspace{% endblock %}
+{% block content %}
+<section class="welcome-row">
+  <div><div class="eyebrow">YOUR WORKSPACE</div><h1>Good work starts <span>here.</span></h1>
+  <p class="muted">A calm place to capture thoughts and move shared work forward.</p></div>
+  <form method="post" action="{{ url_for('create_document') }}" class="create-form">
+    <input name="title" aria-label="New document title" placeholder="Untitled document">
+    <button class="button button-primary" type="submit">＋ New document</button>
+  </form>
+</section>
+<section class="import-panel">
+  <div class="import-icon">↑</div><div class="import-copy"><strong>Bring your writing with you</strong><p class="muted">Import a plain text or Markdown file and keep editing it here.</p></div>
+  <form method="post" action="{{ url_for('import_document') }}" enctype="multipart/form-data" class="upload-form">
+    <input type="file" name="file" accept=".txt,.md,text/plain,text/markdown" required aria-label="Choose text or Markdown file">
+    <button class="button button-secondary" type="submit">Import file</button>
+  </form>
+</section>
+<section class="library-section">
+  <div class="section-heading"><div><h2>Your documents</h2><p class="muted">Documents you own and manage.</p></div><span class="count">{{ owned|length }}</span></div>
+  {% if owned %}<div class="doc-grid">{% for doc in owned %}
+    <a class="doc-card" href="{{ url_for('edit_document', doc_id=doc['id']) }}">
+      <div class="doc-card-top"><span class="file-icon">▤</span><span class="badge owner">OWNER</span></div>
+      <h3>{{ doc['title'] }}</h3><p class="muted">Edited {{ doc['updated_at'][:16].replace('T',' ') }} UTC</p><div class="card-footer"><span>Open document</span><span>↗</span></div>
+    </a>
+  {% endfor %}</div>{% else %}<div class="empty-state"><div class="empty-symbol">✳</div><strong>Your first idea belongs here.</strong><p class="muted">Create a document or import a text file to get started.</p></div>{% endif %}
+</section>
+<section class="library-section">
+  <div class="section-heading"><div><h2>Shared with you</h2><p class="muted">Documents other people have given you access to.</p></div><span class="count">{{ shared|length }}</span></div>
+  {% if shared %}<div class="doc-grid">{% for doc in shared %}
+    <a class="doc-card" href="{{ url_for('edit_document', doc_id=doc['id']) }}">
+      <div class="doc-card-top"><span class="file-icon">▤</span><span class="badge shared">{{ doc['access']|upper }}</span></div>
+      <h3>{{ doc['title'] }}</h3><p class="muted">Owned by {{ doc['owner_name'] }}</p><div class="card-footer"><span>Open shared document</span><span>↗</span></div>
+    </a>
+  {% endfor %}</div>{% else %}<div class="subtle-empty">No shared documents yet. Switch to another demo account and share a document with {{ user['email'] }} to test this flow.</div>{% endif %}
+</section>
+{% endblock %}

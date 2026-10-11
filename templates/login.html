@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Choose account{% endblock %}
+{% block content %}
+<section class="login-card">
+  <div class="eyebrow">A lightweight document workspace</div>
+  <h1>Make space for<br><span>good ideas.</span></h1>
+  <p class="muted">Choose a demo account to create, edit, import, and share documents. No password is needed for this assessment demo.</p>
+  <form method="post" class="stack">
+    <label for="email">Continue as</label>
+    <select name="email" id="email" required>{% for account in users %}
+      <option value="{{ account['email'] }}">{{ account['name'] }} — {{ account['email'] }}</option>
+    {% endfor %}</select>
+    <button class="button button-primary full" type="submit">Open workspace <span>→</span></button>
+  </form>
+  <p class="tiny muted">Demo authentication only. Not intended for production use.</p>
+</section>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}{{ doc['title'] }}{% endblock %}
+{% block content %}
+<div class="editor-topline"><a class="back-link" href="{{ url_for('index') }}">← All documents</a><span class="doc-status"><span class="status-dot"></span><span id="save-status">All changes saved</span></span></div>
+<div class="editor-layout">
+  <section class="editor-main">
+    <div class="title-row"><input id="doc-title" class="title-input" value="{{ doc['title'] }}" aria-label="Document title" {% if access == 'view' %}readonly{% endif %}><span class="access-pill">{{ 'OWNER' if access == 'owner' else ('VIEW ONLY' if access == 'view' else 'SHARED · EDIT') }}</span></div>
+    <div class="toolbar" role="toolbar" aria-label="Text formatting">
+      <button type="button" data-command="bold" title="Bold"><b>B</b></button>
+      <button type="button" data-command="italic" title="Italic"><i>I</i></button>
+      <button type="button" data-command="underline" title="Underline"><u>U</u></button><span class="toolbar-divider"></span>
+      <select id="block-format" aria-label="Text style"><option value="P">Paragraph</option><option value="H1">Heading 1</option><option value="H2">Heading 2</option><option value="H3">Heading 3</option></select><span class="toolbar-divider"></span>
+      <button type="button" data-command="insertUnorderedList" title="Bulleted list">• List</button>
+      <button type="button" data-command="insertOrderedList" title="Numbered list">1. List</button>
+    </div>
+    <div id="editor" class="content-editor {% if access == 'view' %}read-only{% endif %}" contenteditable="{{ 'false' if access == 'view' else 'true' }}" spellcheck="true" aria-label="Document content">{{ doc['content']|safe }}</div>
+    <div class="editor-foot"><span>Tip: select text to format it.</span><span>Saved to this workspace</span></div>
+  </section>
+  <aside class="sidebar">
+    <div class="side-card"><div class="side-heading"><span class="side-icon">↗</span><div><h3>Sharing</h3><p class="muted">Work better together</p></div></div>
+      {% if access == 'owner' %}
+      <form method="post" action="{{ url_for('share_document', doc_id=doc['id']) }}" class="share-form">
+        <label for="share-email">Invite a collaborator</label><select name="email" id="share-email" required><option value="">Choose a demo user</option>{% for person in users %}<option value="{{ person['email'] }}">{{ person['name'] }} · {{ person['email'] }}</option>{% endfor %}</select>
+        <label for="permission">Access level</label><select name="permission" id="permission"><option value="edit">Can edit</option><option value="view">Can view</option></select>
+        <button class="button button-primary full" type="submit">Share document</button>
+      </form>
+      <div class="share-list"><h4>People with access</h4><div class="person-row"><span class="avatar">{{ doc['owner_name'][0]|upper }}</span><div class="person-info"><strong>{{ doc['owner_name'] }}</strong><small>Owner · {{ doc['owner_email'] }}</small></div><span class="role-label">Owner</span></div>
+      {% for person in shares %}<div class="person-row"><span class="avatar alt">{{ person['name'][0]|upper }}</span><div class="person-info"><strong>{{ person['name'] }}</strong><small>{{ person['email'] }}</small></div><span class="role-label">{{ person['permission'] }}</span></div>{% else %}<p class="tiny muted">No collaborators yet.</p>{% endfor %}</div>
+      {% else %}<div class="owner-info"><span class="avatar">{{ doc['owner_name'][0]|upper }}</span><div><strong>{{ doc['owner_name'] }}</strong><p class="muted tiny">Document owner</p></div></div><p class="muted tiny">You have {{ 'view-only' if access == 'view' else 'editing' }} access. Ask the owner to change your permissions.</p>{% endif %}
+    </div>
+    <div class="side-card about-card"><div class="side-heading"><span class="side-icon">✦</span><div><h3>Made for focus</h3><p class="muted">A smaller, simpler workspace</p></div></div><p class="muted tiny">Your documents autosave as you type. Basic formatting and shared access keep collaboration simple.</p></div>
+  </aside>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const docId = {{ doc['id'] }};
+const canEdit = {{ 'true' if access != 'view' else 'false' }};
+const editor = document.getElementById('editor');
+const titleInput = document.getElementById('doc-title');
+const status = document.getElementById('save-status');
+let saveTimer = null, inFlight = false, pending = false;
+if (canEdit) {
+  document.querySelectorAll('[data-command]').forEach(btn => btn.addEventListener('click', () => {
+    editor.focus(); document.execCommand(btn.dataset.command, false, null); queueSave();
+  }));
+  document.getElementById('block-format').addEventListener('change', e => {
+    editor.focus(); document.execCommand('formatBlock', false, e.target.value); queueSave();
+  });
+  editor.addEventListener('input', queueSave);
+  titleInput.addEventListener('input', queueSave);
+}
+function queueSave() {
+  if (!canEdit) return;
+  status.textContent = 'Unsaved changes…';
+  status.parentElement.classList.add('saving');
+  clearTimeout(saveTimer); saveTimer = setTimeout(saveDocument, 650);
+}
+async function saveDocument() {
+  if (inFlight) { pending = true; return; }
+  inFlight = true; pending = false;
+  try {
+    const response = await fetch(`/api/documents/${docId}`, {
+      method: 'PUT', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({title: titleInput.value, content: editor.innerHTML})
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not save');
+    titleInput.value = data.title;
+    status.textContent = 'All changes saved';
+    status.parentElement.classList.remove('saving');
+    document.title = data.title + ' · Papertrail';
+  } catch (err) {
+    status.textContent = 'Save failed — retry by editing';
+    status.parentElement.classList.add('save-error');
+  } finally {
+    inFlight = false;
+    if (pending) saveDocument();
+  }
+}
+</script>
+{% endblock %}
